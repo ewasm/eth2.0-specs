@@ -1,4 +1,14 @@
-# Phase 2 Proposal 2
+# Ethereum 2.0 Phase 2 -- Execution
+
+**Notice**: This document is a work-in-progress for researchers and implementers.
+
+## Table of contents
+
+<!-- TOC -->
+
+TBA
+
+<!-- /TOC -->
 
 ### Introduction
 
