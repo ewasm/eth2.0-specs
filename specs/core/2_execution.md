@@ -34,35 +34,32 @@ On the beacon chain we add three new transaction types:
 `NewExecutionScript` (basically, creates a new execution script whose code lives on the beacon chain and which can hold ETH):
 
 ```python
-{
-    "sender": uint64,
-    "slot": uint64,
-    "code": bytes
-    "pubkey": BLSPubkey,
-    "signature": BLSSignature
-}
+class NewExecutionScript(Container):
+    sender: uint64
+    slot: uint64
+    code: bytes
+    pubkey: BLSPubkey
+    signature: BLSSignature
 ```
 
 `NewValidator` (adds a new validator using ETH taken from an execution script's balance; the operation is authorized via that execution script issuing a receipt in a shard):
 
 ```python
-{
-    "executor": uint64,
-    "receipt": ShardReceipt,
-    "proof": DepositReceiptProof
-}
+class NewValidator(Container):
+    executor: uint64
+    receipt: ShardReceipt
+    proof: DepositReceiptProof
 ```
 
 `Withdrawal` (withdrawal of a beacon chain validator, transferring its ETH to an execution script and issuing a receipt):
 
 ```python
-{
-    "validator_index": uint64,
-    "target": uint64,
-    "data": bytes
-    "pubkey": BLSPubkey,
-    "signature": BLSSignature
-}
+class Withdrawal(Container):
+    validator_index: uint64
+    target: uint64
+    data: bytes
+    pubkey: BLSPubkey
+    signature: BLSSignature
 ```
 
 We add to the `BeaconState` two new data structures:
@@ -70,20 +67,18 @@ We add to the `BeaconState` two new data structures:
 `ExecutionScript`:
 
 ```python
-{
-    "code": bytes,
-    "balance": Gwei
-}
+class ExecutionScript(Container):
+    code: bytes
+    balance: Gwei
 ```
 
 `WithdrawalReceipt`:
 
 ```python
-{
-    "receipt_index": uint64,
-    "withdrawal": Withdrawal,
-    "amount": Gwei
-}
+class WithdrawalReceipt(Container):
+    receipt_index: uint64
+    withdrawal: Withdrawal
+    amount: Gwei
 ```
 
 The beacon state stores a list of each object; the latter is emptied at the beginning of every slot. The beacon state also stores a counter `next_withdrawal_receipt_index`. We also add to `DepositData` a field `min_timestamp`; we add to the `process_deposit` function a requirement that the beacon chain's observed timestamp must be at least that value and less than that value plus `MIN_VALIDATOR_PERSISTENCE_TIME` (set to 1 year). This plus the pubkey uniqueness requirement are used for replay protection.
@@ -186,16 +181,15 @@ def process_withdrawal(state: BeaconState, withdrawal: Withdrawal) -> None:
 The `ShardState` has the following format:
 
 ```python
-{
+class ShardState(Container):
     # 32 bytes per exec env
-    "exec_env_states": [bytes32],
+    exec_env_states: List[bytes32]
     # Current slot
-    "slot": uint64,
+    slot: uint64
     # Parent block
-    "parent_block": ShardBlockHeader,
+    parent_block: ShardBlockHeader
     # Some recent historical state roots since the last known crosslink
-    "latest_state_roots": [bytes32, LATEST_STATE_ROOTS_LENGTH],
-}
+    latest_state_roots: List[bytes32, LATEST_STATE_ROOTS_LENGTH]
 ```
 
 
@@ -267,46 +261,42 @@ We first define a few SSZ class:
 `EthAccount`:
 
 ```python
-{
-    "pubkey": BLSPubkey,
-    "nonce": uint64,
-    "value": uint64
-}
+class EthAccount(Container):
+    pubkey: BLSPubkey
+    nonce: uint64
+    value: uint64
 ```
 
 `MyWithdrawal`:
 
 ```python
-{
-    "receipt": WithdrawalReceipt,
-    "proof": WithdrawalReceiptProof,
-    "state_witness": SSZMerklePartial[BigState]
-}
+class MyWithdrawal(Container):
+    receipt: WithdrawalReceipt
+    proof: WithdrawalReceiptProof
+    state_witness: SSZMerklePartial[BigState]
 ```
 
 `MyTransfer`:
 
 ```python
-{
-    "sender": bytes32,
-    "nonce": uint64,
-    "target": bytes32,
-    "amount": uint64,
-    "signature": BLSSignature,
-    "state_witness": SSZMerklePartial[BigState]
-}
+class MyTransfer(Container):
+    sender: bytes32
+    nonce: uint64
+    target: bytes32
+    amount: uint64
+    signature: BLSSignature
+    state_witness: SSZMerklePartial[BigState]
 ```
 
 `MyDeposit`:
 
 ```python
-{
-    "address": bytes32,
-    "nonce": uint64,
-    "signature": BLSSignature,
-    "deposit": DepositData,
-    "state_witness": SSZMerklePartial[BigState]
-}
+class MyDeposit(Container):
+    address": bytes32
+    nonce": uint64
+    signature: BLSSignature
+    deposit: DepositData
+    state_witness: SSZMerklePartial[BigState]
 ```
 
 We also define `BigState` as `List[EthAccount, 2**256]`.
